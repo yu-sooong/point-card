@@ -82,14 +82,6 @@ const availableRewards = computed(() => {
 const nextRewardProgress = computed(() => {
   return points.value % rewardPoints
 })
-
-const progressToNextReward = computed(() => {
-  return (nextRewardProgress.value / rewardPoints) * 100
-})
-
-const isGoalReached = computed(() => {
-  return points.value >= totalSlots.value
-})
 </script>
 
 <template>
