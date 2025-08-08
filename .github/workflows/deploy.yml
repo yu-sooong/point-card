@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: corepack enable
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      # 產生 .env.production（Secrets 與 Variables 分開取）
+      - name: Create env
+        run: |
+          echo "VITE_GOOGLE_API_KEY=${{ secrets.VITE_GOOGLE_API_KEY }}" >> .env.production
+          echo "VITE_SHEET_ID=${{ vars.VITE_SHEET_ID }}" >> .env.production
+          echo "VITE_SHEET_RANGE=${{ vars.VITE_SHEET_RANGE }}" >> .env.production
+
+      # 若你的 repo 不是 user.github.io，Vite 要設定 base 為 /<repo>/ 才能正確載資源
+      - name: Patch Vite base (optional)
+        run: |
+          if [ -f vite.config.ts ]; then
+            # 只在沒設定 base 時注入（避免重複）
+            if ! grep -q "base:" vite.config.ts; then
+              sed -i 's@defineConfig({@defineConfig({ base: process.env.GITHUB_REPOSITORY_OWNER == "'${{ github.repository_owner }}'" && "'${{ github.repository }}'" .includes(".github.io") ? "/" : "/'${{ github.event.repository.name }}'/" ,@' vite.config.ts
+            fi
+          fi
+
+      - name: Build
+        run: yarn build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
