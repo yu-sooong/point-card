@@ -4,16 +4,14 @@
     <meta charset="utf-8">
     <title>重導向中...</title>
     <script type="text/javascript">
-        // 取得當前路徑
-        var pathSegmentsToKeep = 1;
+        // 直接重導向到主頁面
         var l = window.location;
-        l.replace(
-            l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-            l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-            l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-            (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-            l.hash
-        );
+        var basePath = '/point-card/';
+        
+        // 如果當前路徑不是主頁面，就重導向到主頁面
+        if (l.pathname !== basePath) {
+            window.location.replace(l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + basePath);
+        }
     </script>
 </head>
 <body>

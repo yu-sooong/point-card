@@ -8,12 +8,13 @@
     <script type="text/javascript">
       // 處理 GitHub Pages 的路由重導向
       (function(l) {
-        if (l.search[1] === '/' ) {
+        // 如果 URL 包含查詢參數，恢復原始路徑
+        if (l.search && l.search.length > 1) {
           var decoded = l.search.slice(1).split('&').map(function(s) { 
             return s.replace(/~and~/g, '&')
           }).join('?');
           window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
+              l.pathname + decoded + l.hash
           );
         }
       }(window.location))
